@@ -17,17 +17,15 @@
     "entitlements": "entitlements.plist"
   },
   "win": {
-    "target": "nsis",
-    "signDlls": true
+    "target": "nsis"
   },
   "linux": {
     "target": "AppImage"
   },
   "publish": {
     "provider": "github",
-    "owner": "your-github-username",
-    "repo": "my-electron-app",
+    "owner": "quochoatqh",
+    "repo": "try-to-publish",
     "releaseType": "release"
-  },
-  "afterSign": "scripts/notarize.js"
+  }
 }

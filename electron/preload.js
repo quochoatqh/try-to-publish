@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from 'electron';
+const { contextBridge, ipcRenderer } = require('electron');
 
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
@@ -23,5 +23,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   showNotification: (title, body) => ipcRenderer.invoke('notification:show', title, body),
 });
 
-// Remove this if you don't need it
+// Debug logging
 console.log('Preload script loaded');
+console.log('contextBridge available:', !!contextBridge);
+console.log('ipcRenderer available:', !!ipcRenderer);
+
+// Test if electronAPI is exposed
+window.addEventListener('DOMContentLoaded', () => {
+  console.log('DOMContentLoaded - electronAPI:', window.electronAPI);
+});
