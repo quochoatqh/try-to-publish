@@ -1,0 +1,33 @@
+{
+  "appId": "com.example.my-electron-app",
+  "productName": "My Electron App",
+  "directories": {
+    "output": "release"
+  },
+  "files": [
+    "dist/**/*",
+    "electron/main.js",
+    "electron/preload.js",
+    "package.json"
+  ],
+  "mac": {
+    "category": "public.app-category.productivity",
+    "hardenedRuntime": true,
+    "gatekeeperAssess": false,
+    "entitlements": "entitlements.plist"
+  },
+  "win": {
+    "target": "nsis",
+    "signDlls": true
+  },
+  "linux": {
+    "target": "AppImage"
+  },
+  "publish": {
+    "provider": "github",
+    "owner": "your-github-username",
+    "repo": "my-electron-app",
+    "releaseType": "release"
+  },
+  "afterSign": "scripts/notarize.js"
+}
