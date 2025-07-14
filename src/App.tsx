@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
@@ -16,7 +16,14 @@ declare global {
       setTheme: (theme: string) => Promise<void>;
       getTheme: () => Promise<string>;
       showNotification: (title: string, body: string) => Promise<void>;
-
+      checkForUpdates: () => Promise<void>;
+      installUpdate: () => Promise<void>;
+      onUpdateChecking: (callback: () => void) => void;
+      onUpdateAvailable: (callback: (event: any, info: any) => void) => void;
+      onUpdateNotAvailable: (callback: (event: any, info: any) => void) => void;
+      onUpdateError: (callback: (event: any, error: string) => void) => void;
+      onUpdateProgress: (callback: (event: any, progress: any) => void) => void;
+      onUpdateDownloaded: (callback: (event: any, info: any) => void) => void;
     };
   }
 }
@@ -24,6 +31,7 @@ declare global {
 function App() {
   const [count, setCount] = useState(0)
   const [version, setVersion] = useState<string>('')
+  const [updateStatus, setUpdateStatus] = useState<string>('No updates checked')
 
 
   const handleGetVersion = async () => {
@@ -52,7 +60,61 @@ function App() {
     }
   };
 
-  // Auto-update functionality temporarily removed
+  const handleCheckForUpdates = async () => {
+    console.log('🔄 Check for updates button clicked');
+    if (window.electronAPI) {
+      console.log('📡 Calling electronAPI.checkForUpdates()');
+      setUpdateStatus('Checking for updates...');
+      await window.electronAPI.checkForUpdates();
+      console.log('✅ checkForUpdates call completed');
+    } else {
+      console.log('❌ electronAPI not available');
+    }
+  };
+
+  const handleInstallUpdate = async () => {
+    if (window.electronAPI) {
+      await window.electronAPI.installUpdate();
+    }
+  };
+
+  // Setup update listeners
+  useEffect(() => {
+    console.log('🎧 Setting up update event listeners');
+    if (window.electronAPI) {
+      window.electronAPI.onUpdateChecking(() => {
+        console.log('📡 Received: update-checking');
+        setUpdateStatus('Checking for updates...');
+      });
+
+      window.electronAPI.onUpdateAvailable((event, info) => {
+        console.log('✅ Received: update-available', info);
+        setUpdateStatus(`Update available: v${info.version} - Downloading...`);
+      });
+
+      window.electronAPI.onUpdateNotAvailable(() => {
+        console.log('❌ Received: update-not-available');
+        setUpdateStatus('No updates available');
+      });
+
+      window.electronAPI.onUpdateError((event, error) => {
+        console.log('💥 Received: update-error', error);
+        setUpdateStatus(`Update error: ${error}`);
+      });
+
+      window.electronAPI.onUpdateProgress((event, progress) => {
+        console.log('📊 Received: update-progress', progress.percent);
+        setUpdateStatus(`Downloading: ${Math.round(progress.percent)}%`);
+      });
+
+      window.electronAPI.onUpdateDownloaded((event, info) => {
+        console.log('📦 Received: update-downloaded', info);
+        setUpdateStatus(`Update downloaded: v${info.version} - Ready to install`);
+      });
+    } else {
+      console.log('❌ electronAPI not available for event listeners');
+    }
+  }, []);
 
   return (
     <>
@@ -88,7 +150,12 @@ function App() {
         </button>
       </div>
 
-      {/* Auto-update UI temporarily removed */}
+      <div className="card">
+        <h3>Auto-Update</h3>
+        <p>Status: {updateStatus}</p>
+        <button onClick={handleCheckForUpdates}>Check for Updates</button>
+        <button onClick={handleInstallUpdate}>Install Update</button>
+      </div>
 
       <p className="read-the-docs">
         Click on the Vite and React logos to learn more

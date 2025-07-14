@@ -21,6 +21,16 @@ contextBridge.exposeInMainWorld('electronAPI', {
   
   // Notifications
   showNotification: (title, body) => ipcRenderer.invoke('notification:show', title, body),
+
+  // Auto-updater
+  checkForUpdates: () => ipcRenderer.invoke('updater:check-for-updates'),
+  installUpdate: () => ipcRenderer.invoke('updater:install-update'),
+  onUpdateChecking: (callback) => ipcRenderer.on('update-checking', callback),
+  onUpdateAvailable: (callback) => ipcRenderer.on('update-available', callback),
+  onUpdateNotAvailable: (callback) => ipcRenderer.on('update-not-available', callback),
+  onUpdateError: (callback) => ipcRenderer.on('update-error', callback),
+  onUpdateProgress: (callback) => ipcRenderer.on('update-progress', callback),
+  onUpdateDownloaded: (callback) => ipcRenderer.on('update-downloaded', callback),
 });
 
 // Debug logging
