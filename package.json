@@ -17,6 +17,8 @@
     "electron:pack": "npm run build && electron-builder --dir",
     "electron:dist": "npm run build && electron-builder",
     "electron:publish": "npm run build && electron-builder --publish=always",
+    "electron:publish-draft": "npm run build && electron-builder --publish=onTagOrDraft",
+    "electron:test-build": "npm run build && electron-builder --publish=never",
     "release": "npm run build && electron-builder --publish=onTagOrDraft"
   },
   "dependencies": {

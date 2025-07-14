@@ -14,7 +14,8 @@
     "category": "public.app-category.productivity",
     "hardenedRuntime": false,
     "gatekeeperAssess": false,
-    "entitlements": "entitlements.plist"
+    "entitlements": "entitlements.plist",
+    "identity": null
   },
   "win": {
     "target": "nsis"
