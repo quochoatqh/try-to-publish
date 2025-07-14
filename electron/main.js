@@ -1,4 +1,5 @@
 import { app, BrowserWindow, ipcMain, dialog, nativeTheme, Notification } from 'electron';
+import { autoUpdater } from 'electron-updater';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -108,11 +109,71 @@ function setupIpcHandlers() {
       new Notification({ title, body }).show();
     }
   });
+
+
+}
+
+// Auto-updater setup
+function setupAutoUpdater() {
+  // Configure auto-updater
+  autoUpdater.checkForUpdatesAndNotify();
+
+  // Auto-updater events
+  autoUpdater.on('checking-for-update', () => {
+    console.log('Checking for update...');
+  });
+
+  autoUpdater.on('update-available', (info) => {
+    console.log('Update available:', info.version);
+    // Show notification to user
+    if (Notification.isSupported()) {
+      new Notification({
+        title: 'Update Available',
+        body: `Version ${info.version} is available. Downloading...`
+      }).show();
+    }
+  });
+
+  autoUpdater.on('update-not-available', (info) => {
+    console.log('Update not available:', info.version);
+  });
+
+  autoUpdater.on('error', (err) => {
+    console.error('Update error:', err);
+  });
+
+  autoUpdater.on('download-progress', (progressObj) => {
+    let log_message = "Download speed: " + progressObj.bytesPerSecond;
+    log_message = log_message + ' - Downloaded ' + progressObj.percent + '%';
+    log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')';
+    console.log(log_message);
+  });
+
+  autoUpdater.on('update-downloaded', (info) => {
+    console.log('Update downloaded:', info.version);
+    // Show notification and prompt user to restart
+    if (Notification.isSupported()) {
+      new Notification({
+        title: 'Update Ready',
+        body: `Version ${info.version} has been downloaded. Restart to apply.`
+      }).show();
+    }
+
+    // Auto-restart after 5 seconds (optional)
+    setTimeout(() => {
+      autoUpdater.quitAndInstall();
+    }, 5000);
+  });
 }
 
 app.whenReady().then(() => {
   setupIpcHandlers();
   createWindow();
+
+  // Setup auto-updater (only in production)
+  if (!isDev) {
+    setupAutoUpdater();
+  }
 });
 
 app.on('window-all-closed', () => {

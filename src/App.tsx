@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
@@ -16,6 +16,10 @@ declare global {
       setTheme: (theme: string) => Promise<void>;
       getTheme: () => Promise<string>;
       showNotification: (title: string, body: string) => Promise<void>;
+      checkForUpdates: () => Promise<void>;
+      installUpdate: () => Promise<void>;
+      onUpdateAvailable: (callback: (event: any, info: any) => void) => void;
+      onUpdateDownloaded: (callback: (event: any, info: any) => void) => void;
     };
   }
 }
@@ -23,6 +27,7 @@ declare global {
 function App() {
   const [count, setCount] = useState(0)
   const [version, setVersion] = useState<string>('')
+  const [updateStatus, setUpdateStatus] = useState<string>('No updates checked')
 
   const handleGetVersion = async () => {
     if (window.electronAPI) {
@@ -49,6 +54,32 @@ function App() {
       }
     }
   };
+
+  const handleCheckForUpdates = async () => {
+    if (window.electronAPI) {
+      setUpdateStatus('Checking for updates...');
+      await window.electronAPI.checkForUpdates();
+    }
+  };
+
+  const handleInstallUpdate = async () => {
+    if (window.electronAPI) {
+      await window.electronAPI.installUpdate();
+    }
+  };
+
+  // Setup update listeners
+  useEffect(() => {
+    if (window.electronAPI) {
+      window.electronAPI.onUpdateAvailable((event, info) => {
+        setUpdateStatus(`Update available: v${info.version}`);
+      });
+
+      window.electronAPI.onUpdateDownloaded((event, info) => {
+        setUpdateStatus(`Update downloaded: v${info.version} - Ready to install`);
+      });
+    }
+  }, []);
 
   return (
     <>
@@ -82,6 +113,13 @@ function App() {
         <button onClick={() => window.electronAPI?.showNotification('Test', 'Hello from Electron!')}>
           Show Notification
         </button>
+      </div>
+
+      <div className="card">
+        <h3>Auto-Update</h3>
+        <p>Status: {updateStatus}</p>
+        <button onClick={handleCheckForUpdates}>Check for Updates</button>
+        <button onClick={handleInstallUpdate}>Install Update</button>
       </div>
 
       <p className="read-the-docs">

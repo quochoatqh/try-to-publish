@@ -12,7 +12,7 @@
   ],
   "mac": {
     "category": "public.app-category.productivity",
-    "hardenedRuntime": true,
+    "hardenedRuntime": false,
     "gatekeeperAssess": false,
     "entitlements": "entitlements.plist"
   },
