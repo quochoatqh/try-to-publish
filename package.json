@@ -1,7 +1,7 @@
 {
   "name": "my-electron-app",
   "private": true,
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A security-focused Electron application",
   "author": "quochoatqh",
   "type": "module",

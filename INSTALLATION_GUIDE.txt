@@ -1,0 +1,11 @@
+📱 INSTALLATION GUIDE 📱
+
+1. Drag "My Electron App.app" to Applications folder →
+
+2. Open Terminal and run:
+
+   xattr -cr "/Applications/My Electron App.app"
+
+3. Done! You can now open the app normally.
+
+⚠️  This removes macOS security restrictions for unsigned apps.
