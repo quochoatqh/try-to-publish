@@ -9,10 +9,11 @@ on:
 jobs:
   release:
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     
     strategy:
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        os: [macos-latest]
     
     steps:
       - name: Checkout code
@@ -35,4 +36,9 @@ jobs:
           # Disable code signing for now
           CSC_IDENTITY_AUTO_DISCOVERY: false
 
-        run: npm run electron:publish
+        run: |
+          echo "Starting build process..."
+          npm run build
+          echo "Build completed, starting packaging..."
+          npx electron-builder --publish=always
+        continue-on-error: false
