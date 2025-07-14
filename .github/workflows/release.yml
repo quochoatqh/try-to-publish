@@ -6,6 +6,9 @@ on:
       - 'v*'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   release:
     runs-on: ${{ matrix.os }}
@@ -31,7 +34,7 @@ jobs:
       - name: Build and release
         env:
           # GitHub token for publishing releases
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
 
           # Disable code signing for now
           CSC_IDENTITY_AUTO_DISCOVERY: false
