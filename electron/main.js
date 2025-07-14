@@ -1,5 +1,6 @@
 import { app, BrowserWindow, ipcMain, dialog, nativeTheme, Notification } from 'electron';
 // Auto-updater will be dynamically imported
+let autoUpdaterInstance = null;
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -117,7 +118,12 @@ function setupIpcHandlers() {
     if (!isDev) {
       try {
         console.log('📦 Production mode - using real auto-updater');
-        const { autoUpdater } = await import('electron-updater');
+        const autoUpdater = await getAutoUpdater();
+
+        if (!autoUpdater) {
+          event.sender.send('update-error', 'Failed to initialize auto-updater');
+          return;
+        }
 
         // Setup one-time event listeners for this check
         const setupEventForwarding = () => {
@@ -158,7 +164,7 @@ function setupIpcHandlers() {
       // Then simulate result after delay
       setTimeout(() => {
         console.log('📝 Sending simulated update-not-available');
-        event.sender.send('update-not-available', { version: '1.0.2' });
+        event.sender.send('update-not-available', { version: '1.0.3' });
       }, 2000);
     }
   });
@@ -166,8 +172,10 @@ function setupIpcHandlers() {
   ipcMain.handle('updater:install-update', async () => {
     if (!isDev) {
       try {
-        const { autoUpdater } = await import('electron-updater');
-        autoUpdater.quitAndInstall();
+        const autoUpdater = await getAutoUpdater();
+        if (autoUpdater) {
+          autoUpdater.quitAndInstall();
+        }
       } catch (error) {
         console.error('Failed to install update:', error);
       }
@@ -175,11 +183,30 @@ function setupIpcHandlers() {
   });
 }
 
+// Get or initialize autoUpdater instance
+async function getAutoUpdater() {
+  if (!autoUpdaterInstance) {
+    try {
+      const { autoUpdater } = await import('electron-updater');
+      autoUpdaterInstance = autoUpdater;
+      console.log('✅ AutoUpdater instance created');
+    } catch (error) {
+      console.error('❌ Failed to import electron-updater:', error);
+      return null;
+    }
+  }
+  return autoUpdaterInstance;
+}
+
 // Auto-updater setup
 async function setupAutoUpdater() {
   try {
-    // Dynamic import to handle CommonJS module
-    const { autoUpdater } = await import('electron-updater');
+    // Get shared autoUpdater instance
+    const autoUpdater = await getAutoUpdater();
+    if (!autoUpdater) {
+      console.error('❌ Failed to get autoUpdater instance');
+      return null;
+    }
 
     console.log('Auto-updater initialized');
 
