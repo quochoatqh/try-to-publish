@@ -1,6 +1,17 @@
 import { app, BrowserWindow, ipcMain, dialog, nativeTheme, Notification } from 'electron';
 // Auto-updater will be dynamically imported
 let autoUpdaterInstance = null;
+
+// Try static import as fallback
+let staticAutoUpdater = null;
+try {
+  // This might work in some environments
+  const electronUpdater = require('electron-updater');
+  staticAutoUpdater = electronUpdater.autoUpdater;
+  console.log('✅ Static autoUpdater import successful');
+} catch (error) {
+  console.log('ℹ️ Static import failed, will use dynamic import');
+}
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -121,9 +132,13 @@ function setupIpcHandlers() {
         const autoUpdater = await getAutoUpdater();
 
         if (!autoUpdater) {
-          event.sender.send('update-error', 'Failed to initialize auto-updater');
+          const errorMsg = 'Failed to initialize auto-updater - module not found';
+          console.error('❌', errorMsg);
+          event.sender.send('update-error', errorMsg);
           return;
         }
+
+        console.log('✅ AutoUpdater ready, checking for updates...');
 
         // Setup one-time event listeners for this check
         const setupEventForwarding = () => {
@@ -187,11 +202,37 @@ function setupIpcHandlers() {
 async function getAutoUpdater() {
   if (!autoUpdaterInstance) {
     try {
-      const { autoUpdater } = await import('electron-updater');
+      let autoUpdater;
+
+      // Try static import first (if available)
+      if (staticAutoUpdater) {
+        console.log('✅ Using static autoUpdater import');
+        autoUpdater = staticAutoUpdater;
+      } else {
+        // Try different import methods
+        if (isDev) {
+          // Development: use dynamic import
+          console.log('🛠️ Dev mode: using dynamic import');
+          const module = await import('electron-updater');
+          autoUpdater = module.autoUpdater;
+        } else {
+          // Production: use require
+          console.log('📦 Production mode: using require');
+          const module = require('electron-updater');
+          autoUpdater = module.autoUpdater;
+        }
+      }
+
+      if (!autoUpdater) {
+        throw new Error('autoUpdater not found in module');
+      }
+
       autoUpdaterInstance = autoUpdater;
       console.log('✅ AutoUpdater instance created');
     } catch (error) {
       console.error('❌ Failed to import electron-updater:', error);
+      console.error('Error details:', error.message);
+      console.error('Stack trace:', error.stack);
       return null;
     }
   }
