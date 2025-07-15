@@ -1,7 +1,7 @@
 {
   "name": "my-electron-app",
   "private": true,
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "A security-focused Electron application",
   "author": "quochoatqh",
   "type": "module",
@@ -22,9 +22,11 @@
     "release": "npm run build && electron-builder --publish=onTagOrDraft"
   },
   "dependencies": {
+    "@tailwindcss/vite": "^4.1.11",
     "electron-updater": "^6.6.2",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "tailwindcss": "^4.1.11"
   },
   "devDependencies": {
     "@electron/notarize": "^3.0.1",
