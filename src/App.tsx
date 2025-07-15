@@ -24,6 +24,7 @@ declare global {
       onUpdateError: (callback: (event: any, error: string) => void) => void;
       onUpdateProgress: (callback: (event: any, progress: any) => void) => void;
       onUpdateDownloaded: (callback: (event: any, info: any) => void) => void;
+      onUpdateManualCheck: (callback: (event: any, data: any) => void) => void;
     };
   }
 }
@@ -110,6 +111,11 @@ function App() {
       window.electronAPI.onUpdateDownloaded((event, info) => {
         console.log('📦 Received: update-downloaded', info);
         setUpdateStatus(`Update downloaded: v${info.version} - Ready to install`);
+      });
+
+      window.electronAPI.onUpdateManualCheck((event, data) => {
+        console.log('🔗 Received: update-manual-check', data);
+        setUpdateStatus(`${data.message} Click here: ${data.url}`);
       });
     } else {
       console.log('❌ electronAPI not available for event listeners');
